@@ -1,8 +1,8 @@
-iwime
-=====
+iwry
+====
 
-``iwime`` is a program that helps keep track of money received from
-different people.
+``iwry`` is a CLI (command line interface) that helps keep track and log
+entries.
 
 License
 -------

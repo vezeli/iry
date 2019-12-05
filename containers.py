@@ -2,6 +2,7 @@
 Container objects for storing data.
 """
 from collections import deque, namedtuple
+import itertools
 
 """
 Containing information about a single transfer.
@@ -25,6 +26,24 @@ class Register(deque):
             print(row.format(**rec._asdict()))
         else:
             print(vline)
+
+    def compute_sum(self, val):
+        """Print the sum of amount in ``Register``."""
+        print(sum(val))
+
+    @property
+    def names(self):
+        return [rec.name for rec in self[1:]]
+
+    @property
+    def amount(self):
+        return [int(rec.amount) for rec in self[1:]]
+
+    def __getitem__(self, index):
+        if isinstance(index, slice):
+            return type(self)(itertools.islice(self, index.start,
+                                               index.stop, index.step))
+        return collections.deque.__getitem__(self, index)
 
     def _find(self, val):
         """Returns record with ``val``."""

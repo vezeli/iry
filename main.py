@@ -36,9 +36,12 @@ def remove(args):
     io_utils.write(reg)
 
 
-def list_records(args):
+def show(args):
     reg = io_utils.read()
-    reg.as_table()
+    if args.table:
+        reg.as_table()
+    elif args.sum:
+        reg.compute_sum(reg.amount)
 
 
 parser = argparse.ArgumentParser(prog="iwry")
@@ -53,8 +56,10 @@ parser_remove.add_argument("n", type=int, help="number of records to remove", de
 parser_remove.set_defaults(func=remove)
 
 parser_show = subparsers.add_parser("show", help="show records")
-parser_show.set_defaults(func=list_records)
-parser_show.add_argument("--table", help="list all records")
+parser_show.set_defaults(func=show)
+
+parser_show.add_argument("--table", action="store_true", help="list all records")
+parser_show.add_argument("--sum", action="store_true", help="return the final sum")
 
 parser_init = subparsers.add_parser("init", help="initialize records")
 parser_init.set_defaults(func=init)

@@ -19,7 +19,7 @@ def add(args):
     reg = io_utils.read()
     print('To add transfer provide the following form "full name amount"')
     for num in range(args.n):
-        input_data = input("[{}] ".format(num))
+        input_data = input("[{}] ".format(num + 1))  # start counting from 1 and not 0
         *name, amount = input_data.split()
         name = " ".join(name)
         dtime = str(datetime.datetime.now())
@@ -38,10 +38,16 @@ def remove(args):
 
 def show(args):
     reg = io_utils.read()
-    if args.table:
+    if not any((args.sum, args.people, args.npeople)):
         reg.as_table()
-    elif args.sum:
-        reg.compute_sum(reg.amount)
+    else:
+        if args.sum:
+            print("sum: " + reg.compute_sum(reg.amount))
+        if args.people:
+            names = set(reg.names)
+            print("participants: " + ", ".join(sorted(names)))
+        if args.npeople:
+            print("number of participants: " + str(len(set(reg.names))))
 
 
 parser = argparse.ArgumentParser(prog="iry")
@@ -58,8 +64,12 @@ parser_remove.set_defaults(func=remove)
 parser_show = subparsers.add_parser("show", help="show records")
 parser_show.set_defaults(func=show)
 
-parser_show.add_argument("--table", action="store_true", help="list all records")
+parser_show.add_argument(
+    "--table", action="store_true", help="list all records", default=True
+)
 parser_show.add_argument("--sum", action="store_true", help="return the final sum")
+parser_show.add_argument("--people", action="store_true", help="return the final sum")
+parser_show.add_argument("--npeople", action="store_true", help="return the final sum")
 
 parser_init = subparsers.add_parser("init", help="initialize records")
 parser_init.set_defaults(func=init)

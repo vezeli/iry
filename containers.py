@@ -29,7 +29,7 @@ class Register(deque):
 
     def compute_sum(self, val):
         """Print the sum of amount in ``Register``."""
-        print(sum(val))
+        return str(sum(val))
 
     @property
     def names(self):
@@ -41,8 +41,9 @@ class Register(deque):
 
     def __getitem__(self, index):
         if isinstance(index, slice):
-            return type(self)(itertools.islice(self, index.start,
-                                               index.stop, index.step))
+            return type(self)(
+                itertools.islice(self, index.start, index.stop, index.step)
+            )
         return collections.deque.__getitem__(self, index)
 
     def _find(self, val):

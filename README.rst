@@ -1,8 +1,8 @@
-iwry
-====
+iry
+===
 
-``iwry`` is a CLI (command line interface) that helps keep track and log
-entries.
+``iry`` is a CLI (command line interface) that helps keep track by
+logging entries.
 
 License
 -------

@@ -44,7 +44,7 @@ def show(args):
         reg.compute_sum(reg.amount)
 
 
-parser = argparse.ArgumentParser(prog="iwry")
+parser = argparse.ArgumentParser(prog="iry")
 subparsers = parser.add_subparsers(title="subcommands", help="sub-command help")
 
 parser_add = subparsers.add_parser("add", help="add records")

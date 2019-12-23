@@ -6,7 +6,7 @@ import pickle
 import config
 import containers
 
-pickle_file = config.FILENAME_BASE + ".pkl"
+pickle_file = config.FILENAME + ".pkl"
 
 
 def write(obj, filename=pickle_file):

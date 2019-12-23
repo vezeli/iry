@@ -10,20 +10,21 @@ import io_utils
 
 def init(args):
     filename = io_utils.pickle_file
-    header = containers.Record("Transfer date", "Name", "Amount")
+    header = containers.Record("Date", "Name", "Amount", "Origin", "Currency")
     io_utils.write(containers.Register([header]), filename)
     io_utils.read(filename)
 
 
 def add(args):
     reg = io_utils.read()
-    print('To add transfer provide the following form "full name amount"')
+    print('To add transfer provide the following form "full name amount origin currency"')
     for num in range(args.n):
         input_data = input("[{}] ".format(num + 1))  # start counting from 1 and not 0
-        *name, amount = input_data.split()
+        *name, amount, origin, currency = input_data.split()
         name = " ".join(name)
         dtime = str(datetime.datetime.now())
-        data = {"dtime": dtime, "name": name, "amount": amount}
+        data = {"time": dtime, "name": name, "amount": amount, "origin":
+                origin, "currency": currency}
         entry = containers.Record(**data)
         reg.append(entry)
     io_utils.write(reg)

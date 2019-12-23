@@ -1,29 +1,32 @@
 """
-Container objects for storing data.
+This file contains container objects in which the data is stored.
 """
-from collections import deque, namedtuple
+from collections import deque
+from dataclasses import dataclass, field
+import datetime
 import itertools
-
-"""
-Containing information about a single transfer.
-"""
-Record = namedtuple("Record", "dtime name amount")
+from typing import Union
 
 
-def make_rec(entry):
-    return Record._make(entry)
+@dataclass
+class Record:
+    time: datetime.datetime
+    name: str
+    amount: Union[int, float]
+    origin: str
+    currency: str
 
 
 class Register(deque):
-    """Container for Records."""
+    """Container that stores ``Record`` objects."""
 
     def as_table(self):
         """Print ``Register`` as a table."""
         vline = f"+{'='*30}+{'='*25}+{'='*10}+"
-        row = "|{dtime:30}|{name:25}|{amount:10}|"
+        row = "|{time:30}|{name:25}|{amount:10}|"
         for rec in self:
             print(vline)
-            print(row.format(**rec._asdict()))
+            print(row.format(**rec.__dict__))
         else:
             print(vline)
 

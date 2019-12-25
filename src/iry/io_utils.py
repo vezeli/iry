@@ -3,8 +3,7 @@ Support for manipulating input and output.
 """
 import pickle
 
-import config
-import containers
+from iry import config
 
 pickle_file = config.FILENAME + ".pkl"
 

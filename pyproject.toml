@@ -1,0 +1,18 @@
+[build-system]
+requires = ["flit_core >=2,<3"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.metadata]
+module = "iry"
+author = "Velibor Zeli"
+author-email = "zeli.velibor@gmail.com"
+home-page = "https://github.com/vezeli/iry"
+classifiers = ["License :: OSI Approved :: Apache Software License"]
+requires = [
+    "dataclasses; python_version == '3.6'"
+]
+requires-python = ">=3.6"
+description-file = "README.rst"
+
+[tool.flit.scripts]
+iry = "iry.main:cli"

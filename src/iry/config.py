@@ -3,6 +3,6 @@ Configuration file.
 """
 from typing import Dict, List
 
-FIELDS: List = ["time", "name", "amount", "origin", "currency"]
+FIELDS: List[str] = ["Date", "Name", "Amount", "Origin", "Currency"]
 DEFAULTS: Dict = {"origin": "Swish", "currency": "SEK"}
-FILENAME: str = "vault"
+STORE_FILE: str = "vault.pkl"

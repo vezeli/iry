@@ -9,10 +9,11 @@ author-email = "zeli.velibor@gmail.com"
 home-page = "https://github.com/vezeli/iry"
 classifiers = ["License :: OSI Approved :: Apache Software License"]
 requires = [
-    "dataclasses; python_version == '3.6'"
+    "click",
+    "dataclasses; python_version == '3.6'",
 ]
 requires-python = ">=3.6"
 description-file = "README.rst"
 
 [tool.flit.scripts]
-iry = "iry.main:cli"
+iry = "iry.main_click:cli"

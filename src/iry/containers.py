@@ -1,5 +1,5 @@
 """
-This file contains container objects in which the data is stored.
+Container objects that store data.
 """
 from collections import deque
 from dataclasses import dataclass, field
@@ -7,10 +7,12 @@ import datetime
 import itertools
 from typing import Union
 
+from iry import config
+
 
 @dataclass
 class Record:
-    time: datetime.datetime
+    date: datetime.datetime
     name: str
     amount: Union[int, float]
     origin: str
@@ -19,11 +21,12 @@ class Record:
 
 class Register(deque):
     """Container that stores ``Record`` objects."""
+    _header = config.FIELDS
 
     def as_table(self):
         """Print ``Register`` as a table."""
         vline = f"+{'='*30}+{'='*25}+{'='*10}+"
-        row = "|{time:30}|{name:25}|{amount:10}|"
+        row = "|{date:30}|{name:25}|{amount:10}|"
         for rec in self:
             print(vline)
             print(row.format(**rec.__dict__))

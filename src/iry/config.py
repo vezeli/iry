@@ -4,5 +4,5 @@ Configuration file.
 from typing import Dict, List
 
 FIELDS: List[str] = ["Date", "Name", "Amount", "Origin", "Currency"]
-DEFAULTS: Dict = {"origin": "Swish", "currency": "SEK"}
+DEFAULTS: Dict = {"Origin": "Swish", "Currency": "SEK"}
 STORE_FILE: str = "vault.pkl"

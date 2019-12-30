@@ -19,11 +19,12 @@ def cli():
 @cli.command()
 @click.option("-n", "--nrecords", default=1, help="Number of records to add")
 @click.option("-f", "--filename", default=_file, help="File in which data is stored")
-def add(nrecords: int, filename: str):
+@click.option("--defaults/--no-defaults", default=True, help="Consider the values of defalt fileds")
+def add(nrecords: int, filename: str, defaults: bool):
     data_obj = io_utils.read(filename)
     for n in range(nrecords):
-        print(f"In [{n+1}]:")
-        entry = io_utils.in_request(_fields)
+        print(f"Entry [{n+1}]:")
+        entry = io_utils.in_request(_fields, defaults)
         data_obj.append(entry)
     io_utils.write(data_obj, filename)
 

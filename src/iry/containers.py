@@ -2,7 +2,7 @@
 Container objects that store data.
 """
 from collections import deque
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 import datetime
 import itertools
 from typing import Union
@@ -22,6 +22,26 @@ class Record:
 class Register(deque):
     """Container that stores ``Record`` objects."""
     _header = config.FIELDS
+
+#   def locate(self):
+#       """Lists data from `self`."""
+#       fields = ["date", "name", "amount", "origin", "currency",]
+#       rv = defaultdict(list)
+#       # change None to object() like in Trey Hunters blog, maybe?
+#       rv_size = {field: 0 for field in fields}
+#       for rec in self:
+#           for field in fields:
+#               tmp = getattr(rec, field)
+#               rv[field].append(tmp)
+#               if len(tmp) > rv_size[field]:
+#                   rv_size[field] = len(tmp)
+#       return rv, rv_size
+
+    def list(self):
+        """lists data from `self`."""
+        for rec in self:
+            yield asdict(rec)
+
 
     def as_table(self):
         """Print ``Register`` as a table."""

@@ -1,6 +1,7 @@
 """
 Support for manipulating input and output.
 """
+from pathlib import PurePath
 import pickle
 from typing import Dict, List
 
@@ -41,3 +42,8 @@ def in_request(fields: List, allow_defaults: bool) -> containers.Record:
         else:
             rv[key] = input(f"- {field}: ")
     return containers.Record(**rv)
+
+
+def visual_output(file: PurePath):
+    """Table that will store output."""
+    pass

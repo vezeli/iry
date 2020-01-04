@@ -2,6 +2,7 @@
 CLI for `iry`.
 """
 from pathlib import PurePath
+import sys
 
 import click
 
@@ -36,17 +37,20 @@ def add(nrecords: int, filename: str, defaults: bool):
 @cli.command()
 @click.option("--filename", default=_file, help="File in which data is stored")
 @click.option("-f", "--fields", default=_fields, help="Fields to preview", multiple=True)
-def show(filename: str, fields):
+@click.option("--header/--no-header", default=False, help="Print field names only")
+def show(filename: str, fields, header):
     file = PurePath(filename)
     data_obj = io_utils.read(file)
-    # pack this part into function and combine it with `make_table`
+    if header:
+        print(*data_obj._header)
+        sys.exit(0)
     attrs = [field.lower() for field in fields]
-    # add a method for iterating over specific fields in the `Register`
+    d = utils.table_shape(data_obj, attrs)
     for rec in data_obj:
         rv = {}
         for key, val in utils.gen_fields(rec, attrs):
             rv[key] = val
-        utils.make_table(rv, fields)
+        utils.make_table(rv, d, fields)
 
 
 if __name__ == "__main__":

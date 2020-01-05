@@ -25,23 +25,19 @@ def read(filename):
         return containers.Register()
 
 
-def in_request(fields: List, allow_defaults: bool) -> containers.Record:
-    """Ask user for single `Record` data."""
-    #TODO: rewrite in a more understandable way
-    global _defaults
-    #TODO: change global _defaults to a function that searches for the default
-    # value, if there are default in config, user config and maybe some
-    # other place
-    if not allow_defaults:
-        _defaults = dict()
-    rv = {}
-    for field in fields:
+def ask_user(record_num: int, required: List, defaults: Dict) -> Dict:
+    """Obtain information from user input."""
+    msg = f"Add record [{record_num}]:"
+    print(msg)
+
+    rv = dict()
+    for field in required:
         key = field.lower()
-        if field in _defaults:
-            rv[key] = _defaults[field]
+        if field in defaults:
+            rv[key] = defaults[field]
         else:
             rv[key] = input(f"- {field}: ")
-    return containers.Record(**rv)
+    return rv
 
 
 def visual_output(file: PurePath):

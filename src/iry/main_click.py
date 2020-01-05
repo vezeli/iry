@@ -13,6 +13,7 @@ from iry import config, containers, io_utils, utils
 # attributes in config.py
 _fields = config.FIELDS
 _attrs = [val.lower() for val in config.FIELDS]
+_defaults = config.DEFAULTS
 _file = config.STORE_FILE
 
 
@@ -23,16 +24,32 @@ def cli():
 
 
 @cli.command()
-@click.option("-n", "--nrecords", default=1, help="Number of records to add")
+@click.option("-r", "--records", default=1, help="Number of records to be added")
 @click.option("-f", "--filename", default=_file, help="File in which data is stored")
-@click.option("--defaults/--no-defaults", default=True, help="Consider the values of defalt fileds")
-def add(nrecords: int, filename: str, defaults: bool):
+@click.option("--use-defaults/--no-use-defaults", default=True, help="Take default values to fill in records")
+def add(records: int, filename: str, use_defaults: bool):
     file = PurePath(filename)
     data_obj = io_utils.read(file)
-    for n in range(nrecords):
-        print(f"Entry [{n+1}]:")
-        entry = io_utils.in_request(_fields, defaults)
-        data_obj.append(entry)
+
+    #TODO: change ``global _fileds, _defaults`` into a class that has all
+    # default configuration from global config, user config and configuration
+    # for a specific file.
+    global _fields, _defaults
+    required = list(_fields)
+    if use_defaults:
+        defaults = dict(_defaults)
+    else:
+        defaults = dict()
+
+    rec_num = 1
+    while True:
+        record_info = io_utils.ask_user(rec_num, required, defaults)
+        rec = containers.Record(**record_info)
+        #TODO: change to bisect add and sorted ``Records`` and not append
+        data_obj.append(rec)
+        rec_num += 1
+        if rec_num > records:
+            break
     io_utils.write(data_obj, file)
 
 

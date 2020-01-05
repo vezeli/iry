@@ -9,6 +9,8 @@ import click
 from iry import __version__
 from iry import config, containers, io_utils, utils
 
+#TODO: change _fields and _attrs to _fields dict that has field names and
+# attributes in config.py
 _fields = config.FIELDS
 _attrs = [val.lower() for val in config.FIELDS]
 _file = config.STORE_FILE

@@ -1,47 +1,40 @@
 """
 Container objects that store data.
 """
-from collections import deque
-from dataclasses import dataclass, field, asdict
-import datetime
-import itertools
+from collections import UserList
+from dataclasses import dataclass, asdict
+from datetime import datetime
+from numbers import Number
 from typing import Union
+
+from backports.datetime_fromisoformat import MonkeyPatch
+MonkeyPatch.patch_fromisoformat()
 
 from iry import config
 
 
 @dataclass
 class Record:
-    date: datetime.datetime
+    date: Union[datetime, str]
     name: str
-    amount: Union[int, float]
+    amount: Union[Number, str]
     origin: str
     currency: str
 
+    def __post_init__(self):
+        if isinstance(self.date, str):
+            self.date = datetime.fromisoformat(self.date)
+        self.amount = float(self.amount)
 
-class Register(deque):
+
+class Register(UserList):
     """Container that stores ``Record`` objects."""
     _header = config.FIELDS
-
-#   def locate(self):
-#       """Lists data from `self`."""
-#       fields = ["date", "name", "amount", "origin", "currency",]
-#       rv = defaultdict(list)
-#       # change None to object() like in Trey Hunters blog, maybe?
-#       rv_size = {field: 0 for field in fields}
-#       for rec in self:
-#           for field in fields:
-#               tmp = getattr(rec, field)
-#               rv[field].append(tmp)
-#               if len(tmp) > rv_size[field]:
-#                   rv_size[field] = len(tmp)
-#       return rv, rv_size
 
     def list(self):
         """lists data from `self`."""
         for rec in self:
             yield asdict(rec)
-
 
     def as_table(self):
         """Print ``Register`` as a table."""
@@ -64,13 +57,6 @@ class Register(deque):
     @property
     def amount(self):
         return [int(rec.amount) for rec in self[1:]]
-
-    def __getitem__(self, index):
-        if isinstance(index, slice):
-            return type(self)(
-                itertools.islice(self, index.start, index.stop, index.step)
-            )
-        return collections.deque.__getitem__(self, index)
 
     def _find(self, val):
         """Returns record with ``val``."""

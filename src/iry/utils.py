@@ -3,7 +3,7 @@ from collections import defaultdict
 
 def gen_fields(rec, fields):
     for field in fields:
-        yield field, getattr(rec, field)
+        yield field, str(getattr(rec, field))
 
 
 #TODO: make Table class for outputting data into it

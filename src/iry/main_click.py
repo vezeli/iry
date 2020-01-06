@@ -1,14 +1,14 @@
 """
-CLI for `iry`.
+Command-line interface (CLI) for `iry`.
 """
 import datetime
 import pathlib
 import sys
-from typing import List, Optional
+from typing import List
 
 import click
 
-from iry import __version__, __appauthor__, __appname__
+from iry import __version__
 from iry import config, containers, io_utils, utils
 
 
@@ -21,15 +21,11 @@ def cli(ctx, pklfile: str, cfgfile: str):
     ctx.ensure_object(dict)
 
     pklfile = pathlib.Path(pklfile)
-    ctx.obj["TARGET"] = pklfile
+    target_file = config.which_file("data", pklfile)
+    ctx.obj["TARGET"] = target_file
 
-    config_locations = config.app_location(__appname__, __appauthor__, "config")
-    max_priority = min(config_locations.keys())
-    increased_priority = max_priority - 1
-    config_locations[increased_priority] = pathlib.Path(cfgfile)
-    cfgfile = config.determine_priority(config_locations)
-    iryconfig = config.load_config(cfgfile)
-    ctx.obj["CONFIG"] = iryconfig
+    config_file = config.which_file("config", cfgfile)
+    ctx.obj["CONFIG"] = config.load_config(config_file)
 
 
 @cli.command()
@@ -68,7 +64,7 @@ def add(ctx, records: int, use_defaults: bool, manual_time: bool):
 
 @cli.command()
 @click.option("-f", "--fields", default=None, help="Fields to preview", multiple=True)
-@click.option("--header/--no-header", default=False, help="Print field names only")
+@click.option("--header", is_flag=True, help="Print field names only")
 @click.option("--use-defaults/--no-defaults", default=True, help="Use default values to fill in records?")
 @click.pass_context
 def show(ctx, fields: List[str], header: bool, use_defaults: bool):

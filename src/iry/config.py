@@ -3,11 +3,12 @@ Configuration file.
 """
 from configparser import ConfigParser
 from pathlib import Path
-from types import MappingProxyType
 from typing import Dict, Optional, Tuple
 
 from appdirs import AppDirs
 from dataclasses import dataclass, field
+
+from iry import __appauthor__, __appname__
 
 DEFAULT_CONFIG_FILE: str = "iry.cfg"
 DEFAULT_DATA_FILE: str = "vault.pkl"
@@ -24,11 +25,41 @@ DEFAULT_FIELD_VALUES: Tuple[Tuple[str, str]] = (
 )
 
 
-def app_location(appname: str, appauthor: str, purpose: str) -> Dict:
-    """Find appropriate place for configuration and data files."""
+def which_file(purpose: str, cli_file: str, **kwargs) -> Optional[Path]:
+    """Find a file with highest priority.
+
+    ``purpose`` can be either "config" or "data". If ``purpose == "config"``
+    the file with highest priority must exist otherwise if ``purpose ==
+    "data"`` the file doesn't have to exists.
+    """
+    cli_file = Path(cli_file)
+    appauthor = kwargs.get("appauthor", __appauthor__)
+    appname = kwargs.get("appname", __appname__)
+    appfiles = app_location(appname, appauthor, purpose)
+    appfiles = insert_high_priority(cli_file, appfiles)
+    thefile = prioritize(appfiles, purpose)
+    return thefile
+
+
+def insert_high_priority(value: Path, fpaths: Dict[int, Path]) -> Dict[int, Path]:
+    """Add a file path with highest priority to ``fpaths``."""
+    max_priority = max(fpaths.keys())
+    max_priority += 1
+    fpaths[max_priority] = value
+    return fpaths
+
+
+def app_location(appname: str, appauthor: str, purpose: str) -> Dict[int, Path]:
+    """Find appropriate location for configuration and data files.
+
+    Returns a dictionary with keys of type ``int`` where values stores path to
+    application's configuration and data file (depending on ``purpose``). The
+    keys with higher values store paths with higher priority. Priority
+    determines order in which the files are going to be used.
+    """
     d = AppDirs(appname, appauthor)
     attr = "user_" + purpose + "_dir"
-    dpaths = [Path().cwd(), Path(getattr(d, attr))]
+    dpaths = [Path(getattr(d, attr)), Path().cwd()]
     if purpose == "config":
         fname = DEFAULT_CONFIG_FILE
     if purpose == "data":
@@ -37,10 +68,13 @@ def app_location(appname: str, appauthor: str, purpose: str) -> Dict:
     return fpaths
 
 
-def determine_priority(paths: Dict[int, Path]) -> Optional[Path]:
-    """Find configuration file that exists in the system."""
-    for key in sorted(paths.keys()):
-        if paths[key].exists():
+def prioritize(paths: Dict[int, Path], purpose: str) -> Optional[Path]:
+    """Find existing config/data file from ``paths``."""
+    for key in sorted(paths.keys(), reverse=True):
+        if purpose == "config":
+            if paths[key].exists():
+                return paths[key]
+        if purpose == "data":
             return paths[key]
 
 

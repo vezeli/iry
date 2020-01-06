@@ -1,22 +1,26 @@
 """
-Support for manipulating input and output.
+Support functionality for manipulating input and output.
 """
-from pathlib import PurePath
+import pathlib
 import pickle
-from typing import Dict, List
+import sys
+from typing import Dict, List, Optional
 
 from iry import config, containers
 
 
-def write(obj, filename):
-    with open(filename, "wb") as f:
+def write(obj: containers.Register, file: pathlib.Path) -> None:
+    if not file.exists():
+        filename = pathlib.PurePath(file).name
+        msg = f"File \"{filename}\" is created."
+        print(msg)
+    with open(file, "wb") as f:
         pickle.dump(obj, f)
-    return None
 
 
-def read(filename):
+def read(file: pathlib.Path) -> Optional[containers.Register]:
     try:
-        with open(filename, "rb") as f:
+        with open(file, "rb") as f:
             obj = pickle.load(f)
         return obj
     except FileNotFoundError:
@@ -35,13 +39,8 @@ def ask_user(record_num: int, required: List, defaults: Dict) -> Dict:
             rv[key] = defaults[field]
         else:
             if field == "Date":
-                input_msg = f" - {field} (YYYY-MM-DD HH:MM): "
+                input_msg = f" - {field} (YYYY-MM-DD[ HH:MM]): "
             else:
                 input_msg = f" - {field}: "
             rv[key] = input(input_msg)
     return rv
-
-
-def visual_output(file: PurePath):
-    """Table that will store output."""
-    pass

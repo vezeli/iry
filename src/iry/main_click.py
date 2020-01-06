@@ -2,43 +2,48 @@
 CLI for `iry`.
 """
 import datetime
-from pathlib import Path, PurePath
-from typing import List, Optional
+import pathlib
 import sys
+from typing import List, Optional
 
 import click
 
-from iry import __version__
+from iry import __version__, __appauthor__, __appname__
 from iry import config, containers, io_utils, utils
-
 
 
 @click.group()
 @click.version_option(__version__, "-V", "--version")
-def cli():
-    pass
+@click.option("-p", "--pklfile", default=config.DEFAULT_DATA_FILE, help="pickle file")
+@click.option("-c", "--cfgfile", default=config.DEFAULT_CONFIG_FILE, help="configuration file")
+@click.pass_context
+def cli(ctx, pklfile: str, cfgfile: str):
+    ctx.ensure_object(dict)
+
+    pklfile = pathlib.Path(pklfile)
+    ctx.obj["TARGET"] = pklfile
+
+    config_locations = config.app_location(__appname__, __appauthor__, "config")
+    max_priority = min(config_locations.keys())
+    increased_priority = max_priority - 1
+    config_locations[increased_priority] = pathlib.Path(cfgfile)
+    cfgfile = config.determine_priority(config_locations)
+    iryconfig = config.load_config(cfgfile)
+    ctx.obj["CONFIG"] = iryconfig
 
 
 @cli.command()
 @click.option("-r", "--records", default=1, help="Number of records to be added.")
-@click.option("-f", "--filename", default=config.DEFAULT_DATA_FILE, help="File in which data is stored.")
 @click.option("--use-defaults/--no-defaults", default=True, help="Use default values to fill in records?")
-@click.option("-c", "--configfile", default=config.DEFAULT_CONFIG_FILE, help="path to configuration file")
 @click.option("--manual-time/--auto-time", default=False, help="set timestamp to now")
-def add(records: int, filename: str, use_defaults: bool, configfile:
-        Optional[str], manual_time: bool):
-    # TODO: provide a message when a new file is created
-    file = PurePath(filename)
+@click.pass_context
+def add(ctx, records: int, use_defaults: bool, manual_time: bool):
+    # TODO: auto-time and no-defaults will not work together, make a function
+    # that adds defaults to a dictionary of defaults if no-defaults are turned
+    # on
+    file = ctx.obj["TARGET"]
     data_obj = io_utils.read(file)
-
-    # TODO: put configuration into context object and pass it to subcommands
-    appname, appauthor = "iry", "vezeli"
-    config_locations = config.app_location(appname, appauthor, "config")
-    max_priority = min(config_locations.keys())
-    increased_priority = max_priority - 1
-    config_locations[increased_priority] = Path(configfile)
-    configfile = config.determine_priority(config_locations)
-    iryconfig = config.load_config(configfile)
+    iryconfig = ctx.obj["CONFIG"]
     if not manual_time:
         now = datetime.datetime.now()
         now_fmt = now.isoformat(sep=" ", timespec="minutes")
@@ -62,24 +67,19 @@ def add(records: int, filename: str, use_defaults: bool, configfile:
 
 
 @cli.command()
-@click.option("--filename", default=config.DEFAULT_DATA_FILE, help="File in which data is stored")
 @click.option("-f", "--fields", default=None, help="Fields to preview", multiple=True)
 @click.option("--header/--no-header", default=False, help="Print field names only")
 @click.option("--use-defaults/--no-defaults", default=True, help="Use default values to fill in records?")
-@click.option("-c", "--configfile", default=config.DEFAULT_CONFIG_FILE, help="path to configuration file")
-def show(filename: str, fields: List[str], header: bool, configfile: str,
-        use_defaults: bool):
-    file = PurePath(filename)
+@click.pass_context
+def show(ctx, fields: List[str], header: bool, use_defaults: bool):
+    file = ctx.obj["TARGET"]
+    if not file.exists():
+        filename = pathlib.PurePath(file).name
+        msg = f"Ups, it seems that file \"{filename}\" doesn't exist."
+        print(msg)
+        sys.exit(0)
     data_obj = io_utils.read(file)
-
-    # TODO: put configuration into context object and pass it to subcommands
-    appname, appauthor = "iry", "vezeli"
-    config_locations = config.app_location(appname, appauthor, "config")
-    max_priority = min(config_locations.keys())
-    increased_priority = max_priority - 1
-    config_locations[increased_priority] = Path(configfile)
-    configfile = config.determine_priority(config_locations)
-    iryconfig = config.load_config(configfile)
+    iryconfig = ctx.obj["CONFIG"]
     required = iryconfig.fields
     if use_defaults:
         defaults = iryconfig.field_values

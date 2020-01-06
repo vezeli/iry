@@ -7,8 +7,6 @@ from typing import Dict, List
 
 from iry import config, containers
 
-_defaults = config.DEFAULTS
-
 
 def write(obj, filename):
     with open(filename, "wb") as f:
@@ -26,7 +24,7 @@ def read(filename):
 
 
 def ask_user(record_num: int, required: List, defaults: Dict) -> Dict:
-    """Obtain information from user input."""
+    """Store information from user input in ``dict``."""
     msg = f"Add record [{record_num}]:"
     print(msg)
 

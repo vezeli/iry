@@ -1,6 +1,7 @@
 """
 CLI for `iry`.
 """
+import datetime
 from pathlib import Path, PurePath
 from typing import List, Optional
 import sys
@@ -23,7 +24,9 @@ def cli():
 @click.option("-f", "--filename", default=config.DEFAULT_DATA_FILE, help="File in which data is stored.")
 @click.option("--use-defaults/--no-defaults", default=True, help="Use default values to fill in records?")
 @click.option("-c", "--configfile", default=config.DEFAULT_CONFIG_FILE, help="path to configuration file")
-def add(records: int, filename: str, use_defaults: bool, configfile: Optional[str]):
+@click.option("--manual-time/--auto-time", default=False, help="set timestamp to now")
+def add(records: int, filename: str, use_defaults: bool, configfile:
+        Optional[str], manual_time: bool):
     # TODO: provide a message when a new file is created
     file = PurePath(filename)
     data_obj = io_utils.read(file)
@@ -36,6 +39,10 @@ def add(records: int, filename: str, use_defaults: bool, configfile: Optional[st
     config_locations[increased_priority] = Path(configfile)
     configfile = config.determine_priority(config_locations)
     iryconfig = config.load_config(configfile)
+    if not manual_time:
+        now = datetime.datetime.now()
+        now_fmt = now.isoformat(sep=" ", timespec="minutes")
+        iryconfig.add_field_value("Date", now_fmt)
     required = iryconfig.fields
     if use_defaults:
         defaults = iryconfig.field_values

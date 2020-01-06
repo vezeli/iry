@@ -46,7 +46,7 @@ def determine_priority(paths: Dict[int, Path]) -> Optional[Path]:
 
 @dataclass
 class IryConfig:
-    """Iry configuration."""
+    """Main configuration class."""
     config_file: str = DEFAULT_CONFIG_FILE
     data_file: str = DEFAULT_DATA_FILE
     fields: Tuple[str] = DEFAULT_FIELDS
@@ -77,6 +77,13 @@ class IryConfig:
     @property
     def attrs(self):
         return [self.field_to_attr(field) for field in self.fields]
+
+    def add_field_value(self, field, value):
+        if field not in self.fields:
+            msg = "Cannot assign value for field that doesn't exist in fields"
+            raise ValueError(msg)
+        else:
+            self.field_values[field] = value
 
 
 def load_config(path: Optional[Path]) -> IryConfig:

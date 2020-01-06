@@ -34,7 +34,11 @@ def ask_user(record_num: int, required: List, defaults: Dict) -> Dict:
         if field in defaults:
             rv[key] = defaults[field]
         else:
-            rv[key] = input(f"- {field}: ")
+            if field == "Date":
+                input_msg = f" - {field} (YYYY-MM-DD HH:MM): "
+            else:
+                input_msg = f" - {field}: "
+            rv[key] = input(input_msg)
     return rv
 
 

@@ -21,10 +21,10 @@ def cli(ctx, pklfile: str, cfgfile: str):
     ctx.ensure_object(dict)
 
     pklfile = pathlib.Path(pklfile)
-    target_file = config.which_file("data", pklfile)
+    target_file = config.select("data", priority_path=pklfile)
     ctx.obj["TARGET"] = target_file
 
-    config_file = config.which_file("config", cfgfile)
+    config_file = config.select("config", priority_path=cfgfile)
     ctx.obj["CONFIG"] = config.load_config(config_file)
 
 
@@ -46,7 +46,7 @@ def add(ctx, records: int, use_defaults: bool, manual_time: bool):
         iryconfig.add_field_value("Date", now_fmt)
     required = iryconfig.fields
     if use_defaults:
-        defaults = iryconfig.field_values
+        defaults = iryconfig.defaults_for_fields
     else:
         defaults = dict()
 
@@ -78,7 +78,7 @@ def show(ctx, fields: List[str], header: bool, use_defaults: bool):
     iryconfig = ctx.obj["CONFIG"]
     required = iryconfig.fields
     if use_defaults:
-        defaults = iryconfig.field_values
+        defaults = iryconfig.defaults_for_fields
     else:
         defaults = dict()
 

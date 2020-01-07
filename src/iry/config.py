@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Dict, Optional, Tuple
 
 from appdirs import AppDirs
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from iry import __appauthor__, __appname__
 
@@ -25,35 +25,35 @@ DEFAULT_FIELD_VALUES: Tuple[Tuple[str, str]] = (
 )
 
 
-def which_file(purpose: str, cli_file: str, **kwargs) -> Optional[Path]:
-    """Find a file with highest priority.
+def select(purpose: str, priority_path: Optional[str] = None, **kwargs) -> Optional[Path]:
+    """Selects a file with the highest priority.
 
-    ``purpose`` can be either "config" or "data". If ``purpose == "config"``
-    the file with highest priority must exist otherwise if ``purpose ==
-    "data"`` the file doesn't have to exists.
+    ``purpose`` is either "config" or "data". In case configuration or data
+    files don't exist the function returns ``None``.
     """
-    cli_file = Path(cli_file)
+    priority_path = Path(priority_path)
     appauthor = kwargs.get("appauthor", __appauthor__)
     appname = kwargs.get("appname", __appname__)
-    appfiles = app_location(appname, appauthor, purpose)
-    appfiles = insert_high_priority(cli_file, appfiles)
+    appfiles = default_app_dirs(appname, appauthor, purpose)
+    if priority_path:
+        appfiles = insert_high_priority(priority_path, appfiles)
     thefile = prioritize(appfiles, purpose)
     return thefile
 
 
 def insert_high_priority(value: Path, fpaths: Dict[int, Path]) -> Dict[int, Path]:
-    """Add a file path with highest priority to ``fpaths``."""
+    """Adds a high-priority file path to ``fpaths``."""
     max_priority = max(fpaths.keys())
     max_priority += 1
     fpaths[max_priority] = value
     return fpaths
 
 
-def app_location(appname: str, appauthor: str, purpose: str) -> Dict[int, Path]:
-    """Find appropriate location for configuration and data files.
+def default_app_dirs(appname: str, appauthor: str, purpose: str) -> Dict[int, Path]:
+    """Returns default application configuration or data paths.
 
-    Returns a dictionary with keys of type ``int`` where values stores path to
-    application's configuration and data file (depending on ``purpose``). The
+    Returns a dictionary with keys of type ``int`` where values store paths to
+    application's configuration or data file (depending on ``purpose``). The
     keys with higher values store paths with higher priority. Priority
     determines order in which the files are going to be used.
     """
@@ -69,7 +69,11 @@ def app_location(appname: str, appauthor: str, purpose: str) -> Dict[int, Path]:
 
 
 def prioritize(paths: Dict[int, Path], purpose: str) -> Optional[Path]:
-    """Find existing config/data file from ``paths``."""
+    """Returns highest-priority and existing filepath from ``paths``.
+
+    Finds existing configuration or data file in ``paths`` with highest
+    priority and returns it, otherwise returns ``None``.
+    """
     for key in sorted(paths.keys(), reverse=True):
         if purpose == "config":
             if paths[key].exists():
@@ -84,12 +88,12 @@ class IryConfig:
     config_file: str = DEFAULT_CONFIG_FILE
     data_file: str = DEFAULT_DATA_FILE
     fields: Tuple[str] = DEFAULT_FIELDS
-    field_values: Tuple[Tuple[str, str]] = DEFAULT_FIELD_VALUES
+    defaults_for_fields: Tuple[Tuple[str, str]] = DEFAULT_FIELD_VALUES
 
     def __post_init__(self):
         """Change default values to mutable objects."""
         self.fields = list(self.fields)
-        self.field_values = dict(self.field_values)
+        self.defaults_for_fields = dict(self.defaults_for_fields)
 
     @staticmethod
     def field_to_attr(field_name: str):
@@ -117,7 +121,7 @@ class IryConfig:
             msg = "Cannot assign value for field that doesn't exist in fields"
             raise ValueError(msg)
         else:
-            self.field_values[field] = value
+            self.defaults_for_fields[field] = value
 
 
 def load_config(path: Optional[Path]) -> IryConfig:

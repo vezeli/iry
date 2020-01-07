@@ -27,20 +27,21 @@ def read(file: pathlib.Path) -> Optional[containers.Register]:
         return containers.Register()
 
 
-def ask_user(record_num: int, required: List, defaults: Dict) -> Dict:
-    """Store information from user input in ``dict``."""
-    msg = f"Add record [{record_num}]:"
-    print(msg)
+def ask_user(record_num: int, config: config.IryConfig) -> containers.Record:
+    """Returns ``Record`` filled out with user input."""
+    _fields = config.fields
+    _defaults = config.defaults
 
+    print(f"Add record [{record_num}]:")
     rv = dict()
-    for field in required:
+    for field in _fields:
         key = field.lower()
-        if field in defaults:
-            rv[key] = defaults[field]
+        if field in _defaults:
+            rv[key] = _defaults[field]
         else:
             if field == "Date":
                 input_msg = f" - {field} (YYYY-MM-DD[ HH:MM]): "
             else:
                 input_msg = f" - {field}: "
             rv[key] = input(input_msg)
-    return rv
+    return containers.Record(**rv)

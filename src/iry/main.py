@@ -1,84 +1,86 @@
 """
-Main program.
+Command-line interface (CLI) for `iry`.
 """
-import argparse
 import datetime
+import pathlib
+import sys
+from typing import List
 
-from iry import containers
-from iry import io_utils
+import click
 
-
-def init(args):
-    filename = io_utils.pickle_file
-    header = containers.Record("Date", "Name", "Amount", "Origin", "Currency")
-    io_utils.write(containers.Register([header]), filename)
-    io_utils.read(filename)
+from iry import __version__
+from iry import config, containers, io_utils, utils
 
 
-def add(args):
-    reg = io_utils.read()
-    print('To add transfer provide the following form "full name amount origin currency"')
-    for num in range(args.n):
-        input_data = input("[{}] ".format(num + 1))  # start counting from 1 and not 0
-        *name, amount, origin, currency = input_data.split()
-        name = " ".join(name)
-        dtime = str(datetime.datetime.now())
-        data = {"time": dtime, "name": name, "amount": amount, "origin":
-                origin, "currency": currency}
-        entry = containers.Record(**data)
-        reg.append(entry)
-    io_utils.write(reg)
+@click.group()
+@click.version_option(__version__, "-V", "--version")
+@click.option("-p", "--pklfile", default=config.DEFAULT_DATA_FILE, help="select pickle file")
+@click.option("-c", "--cfgfile", default=config.DEFAULT_CONFIG_FILE, help="select configuration file")
+@click.pass_context
+def cli(ctx, pklfile: str, cfgfile: str):
+    ctx.ensure_object(dict)
+
+    pklfile = pathlib.Path(pklfile)
+    target_file = config.select("data", priority_path=pklfile)
+    ctx.obj["TARGET"] = target_file
+    config_file = config.select("config", priority_path=cfgfile)
+    ctx.obj["CONFIG"] = config.load_config(config_file)
 
 
-def remove(args):
-    reg = io_utils.read()
-    for _ in range(args.n):
-        reg.pop()
-    io_utils.write(reg)
+@cli.command()
+@click.option("-q", "--quantity", default=1, help="number of records to add")
+@click.option("--defaults/--no-defaults", default=True, help="fall back on default values")
+@click.option("--now", is_flag=True, help="automatically set current time")
+@click.pass_context
+def add(ctx, quantity: int, defaults: bool, now):
+    target = ctx.obj["TARGET"]
+    iryconfig = ctx.obj["CONFIG"]
+
+    if not defaults:
+        iryconfig.defaults = dict()
+    if now:
+        ctime = datetime.datetime.now().isoformat(sep=" ", timespec="minutes")
+        iryconfig.change_default(field="Date", value=ctime)
+    records = [io_utils.ask_user(i+1, iryconfig) for i in range(quantity)]
+
+    db = io_utils.read(target)
+    db.extend(records)
+    io_utils.write(db, target)
 
 
-def show(args):
-    reg = io_utils.read()
-    if not any((args.sum, args.people, args.npeople)):
-        reg.as_table()
+@cli.command()
+@click.option("-f", "--fields", default=None, help="Fields to preview", multiple=True)
+@click.option("--header", is_flag=True, help="Print field names only")
+@click.option("--use-defaults/--no-defaults", default=True, help="Use default values to fill in records?")
+@click.pass_context
+def show(ctx, fields: List[str], header: bool, use_defaults: bool):
+    file = ctx.obj["TARGET"]
+    if not file.exists():
+        filename = pathlib.PurePath(file).name
+        msg = f"Ups, it seems that file \"{filename}\" doesn't exist."
+        print(msg)
+        sys.exit(0)
+    data_obj = io_utils.read(file)
+    iryconfig = ctx.obj["CONFIG"]
+    required = iryconfig.fields
+    if use_defaults:
+        defaults = iryconfig.defaults
     else:
-        if args.sum:
-            print("sum: " + reg.compute_sum(reg.amount))
-        if args.people:
-            names = set(reg.names)
-            print("participants: " + ", ".join(sorted(names)))
-        if args.npeople:
-            print("number of participants: " + str(len(set(reg.names))))
+        defaults = dict()
 
+    if not fields:
+        fields = required
 
-def cli():
-    parser = argparse.ArgumentParser(prog="iry")
-    subparsers = parser.add_subparsers(title="subcommands", help="sub-command help")
-
-    parser_add = subparsers.add_parser("add", help="add records")
-    parser_add.add_argument("n", type=int, help="number of records to add", default=1)
-    parser_add.set_defaults(func=add)
-
-    parser_remove = subparsers.add_parser("remove", help="remove records")
-    parser_remove.add_argument("n", type=int, help="number of records to remove", default=1)
-    parser_remove.set_defaults(func=remove)
-
-    parser_show = subparsers.add_parser("show", help="show records")
-    parser_show.set_defaults(func=show)
-
-    parser_show.add_argument(
-        "--table", action="store_true", help="list all records", default=True
-    )
-    parser_show.add_argument("--sum", action="store_true", help="return the final sum")
-    parser_show.add_argument("--people", action="store_true", help="return the final sum")
-    parser_show.add_argument("--npeople", action="store_true", help="return the final sum")
-
-    parser_init = subparsers.add_parser("init", help="initialize records")
-    parser_init.set_defaults(func=init)
-
-    args = parser.parse_args()
-
-    args.func(args)
+    if header:
+        print(*data_obj._header)
+        sys.exit(0)
+    attrs = iryconfig.attrs
+    d = utils.table_shape(data_obj, attrs)
+    for rec in data_obj:
+        rv = {}
+        for key, val in utils.gen_fields(rec, attrs):
+            rv[key] = val
+        utils.make_table(rv, d, fields)
 
 
 if __name__ == "__main__":

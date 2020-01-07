@@ -2,8 +2,9 @@
 Configuration file.
 """
 from configparser import ConfigParser
+from numbers import Number
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, Union
 
 from appdirs import AppDirs
 from dataclasses import dataclass
@@ -88,12 +89,12 @@ class IryConfig:
     config_file: str = DEFAULT_CONFIG_FILE
     data_file: str = DEFAULT_DATA_FILE
     fields: Tuple[str] = DEFAULT_FIELDS
-    defaults_for_fields: Tuple[Tuple[str, str]] = DEFAULT_FIELD_VALUES
+    defaults: Tuple[Tuple[str, str]] = DEFAULT_FIELD_VALUES
 
     def __post_init__(self):
         """Change default values to mutable objects."""
         self.fields = list(self.fields)
-        self.defaults_for_fields = dict(self.defaults_for_fields)
+        self.defaults = dict(self.defaults)
 
     @staticmethod
     def field_to_attr(field_name: str):
@@ -116,12 +117,12 @@ class IryConfig:
     def attrs(self):
         return [self.field_to_attr(field) for field in self.fields]
 
-    def add_field_value(self, field, value):
+    def change_default(self, field: str, value: Union[str, Number, None]):
         if field not in self.fields:
             msg = "Cannot assign value for field that doesn't exist in fields"
             raise ValueError(msg)
         else:
-            self.defaults_for_fields[field] = value
+            self.defaults[field] = value
 
 
 def load_config(path: Optional[Path]) -> IryConfig:

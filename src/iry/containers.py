@@ -30,34 +30,3 @@ class Record:
 class Register(UserList):
     """Container that stores ``Record`` objects."""
     _fields = config.DATA_FIELDS
-
-    def list(self):
-        """lists data from `self`."""
-        for rec in self:
-            yield asdict(rec)
-
-    def as_table(self):
-        """Print ``Register`` as a table."""
-        vline = f"+{'='*30}+{'='*25}+{'='*10}+"
-        row = "|{date:30}|{name:25}|{amount:10}|"
-        for rec in self:
-            print(vline)
-            print(row.format(**rec.__dict__))
-        else:
-            print(vline)
-
-    def compute_sum(self, val):
-        """Print the sum of amount in ``Register``."""
-        return str(sum(val))
-
-    @property
-    def names(self):
-        return [rec.name for rec in self[1:]]
-
-    @property
-    def amount(self):
-        return [int(rec.amount) for rec in self[1:]]
-
-    def _find(self, val):
-        """Returns record with ``val``."""
-        pass

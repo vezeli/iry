@@ -21,8 +21,8 @@ DATA_FIELDS: Tuple[str] = (
     "Currency",
 )
 DEFAULT_FIELD_VALUES: Tuple[Tuple[str, str]] = (
-    ("Origin", "Swish"),
-    ("Currency", "SEK"),
+    ("Origin", ""),
+    ("Currency", ""),
 )
 
 

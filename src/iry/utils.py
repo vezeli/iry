@@ -1,13 +1,16 @@
 from collections import defaultdict
+from typing import List, Tuple
+
+from iry import containers
 
 
-def gen_fields(rec, fields):
+def gen_fields(rec: containers.Register, fields: List[str]) -> Tuple:
     for field in fields:
         yield field, str(getattr(rec, field))
 
 
-#TODO: make Table class for outputting data into it
-#TODO: format header
+# This part of the code needs some serious improvements.
+# TODO: Make Table class for outputting data into it and format header
 def make_table(row, shape, attrs):
     fmt_data = "|"
     fmt_line= "+"
@@ -26,3 +29,10 @@ def table_shape(data_obj, attrs):
             if rv[key] < len(val):
                 rv[key]  = len(val)
     return rv
+
+
+def list_fields(db: containers.Register) -> None:
+    """Returns list of field names in ``db``."""
+    fmt = "{}. {}"
+    for i, field in enumerate(db._fields, start=1):
+        print(fmt.format(i, field))

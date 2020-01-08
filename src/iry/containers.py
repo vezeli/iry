@@ -29,7 +29,7 @@ class Record:
 
 class Register(UserList):
     """Container that stores ``Record`` objects."""
-    _header = config.DEFAULT_FIELDS
+    _fields = config.DATA_FIELDS
 
     def list(self):
         """lists data from `self`."""

@@ -49,34 +49,29 @@ def add(ctx, quantity: int, defaults: bool, now):
 
 
 @cli.command()
-@click.option("-f", "--fields", default=None, help="Fields to preview", multiple=True)
-@click.option("--header", is_flag=True, help="Print field names only")
-@click.option("--use-defaults/--no-defaults", default=True, help="Use default values to fill in records?")
+@click.option("-f", "--field", "fields", default=None, help="field to display", multiple=True)
+@click.option("--header", is_flag=True, help="list available fields")
 @click.pass_context
-def show(ctx, fields: List[str], header: bool, use_defaults: bool):
-    file = ctx.obj["TARGET"]
-    if not file.exists():
-        filename = pathlib.PurePath(file).name
-        msg = f"Ups, it seems that file \"{filename}\" doesn't exist."
+def show(ctx, fields: List[str], header: bool):
+    iryconfig = ctx.obj["CONFIG"]
+    target = ctx.obj["TARGET"]
+    if not target.exists():
+        target_name = pathlib.PurePath(target).name
+        msg = f"Ups, it seems that file \"{target_name}\" doesn't exist."
         print(msg)
         sys.exit(0)
-    data_obj = io_utils.read(file)
-    iryconfig = ctx.obj["CONFIG"]
-    required = iryconfig.fields
-    if use_defaults:
-        defaults = iryconfig.defaults
-    else:
-        defaults = dict()
 
-    if not fields:
-        fields = required
-
+    db = io_utils.read(target)
     if header:
-        print(*data_obj._header)
+        utils.list_fields(db)
         sys.exit(0)
+
+    # TODO: make a class Table and clean this code
     attrs = iryconfig.attrs
-    d = utils.table_shape(data_obj, attrs)
-    for rec in data_obj:
+    d = utils.table_shape(db, attrs)
+    if not fields:
+        fields = iryconfig.fields
+    for rec in db:
         rv = {}
         for key, val in utils.gen_fields(rec, attrs):
             rv[key] = val

@@ -13,7 +13,7 @@ from iry import __appauthor__, __appname__
 
 DEFAULT_CONFIG_FILE: str = "iry.cfg"
 DEFAULT_DATA_FILE: str = "vault.pkl"
-DEFAULT_FIELDS: Tuple[str] = (
+DATA_FIELDS: Tuple[str] = (
     "Date",
     "Name",
     "Amount",
@@ -88,7 +88,7 @@ class IryConfig:
     """Main configuration class."""
     config_file: str = DEFAULT_CONFIG_FILE
     data_file: str = DEFAULT_DATA_FILE
-    fields: Tuple[str] = DEFAULT_FIELDS
+    fields: Tuple[str] = DATA_FIELDS
     defaults: Tuple[Tuple[str, str]] = DEFAULT_FIELD_VALUES
 
     def __post_init__(self):

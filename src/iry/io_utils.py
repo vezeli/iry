@@ -4,7 +4,7 @@ Support functionality for manipulating input and output.
 import pathlib
 import pickle
 import sys
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from iry import config, containers
 
@@ -18,7 +18,7 @@ def write(obj: containers.Register, file: pathlib.Path) -> None:
         pickle.dump(obj, f)
 
 
-def read(file: pathlib.Path) -> Optional[containers.Register]:
+def read(file: pathlib.Path) -> containers.Register:
     try:
         with open(file, "rb") as f:
             obj = pickle.load(f)

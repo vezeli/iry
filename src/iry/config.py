@@ -13,26 +13,26 @@ from iry import __appauthor__, __appname__
 
 DEFAULT_CONFIG_FILE: str = "iry.cfg"
 DEFAULT_DATA_FILE: str = "vault.pkl"
-DATA_FIELDS: Tuple[str] = (
+DATA_FIELDS: Tuple = (
     "Date",
     "Name",
     "Amount",
-    "Origin",
     "Currency",
+    "Origin",
 )
-DEFAULT_FIELD_VALUES: Tuple[Tuple[str, str]] = (
-    ("Origin", ""),
+DEFAULT_FIELD_VALUES: Tuple = (
     ("Currency", ""),
+    ("Origin", ""),
 )
 
 
-def select(purpose: str, priority_path: Optional[str] = None, **kwargs) -> Optional[Path]:
+def select(purpose: str, priority_file: str, **kwargs) -> Optional[Path]:
     """Selects a file with the highest priority.
 
     ``purpose`` is either "config" or "data". In case configuration or data
     files don't exist the function returns ``None``.
     """
-    priority_path = Path(priority_path)
+    priority_path = Path(priority_file)
     appauthor = kwargs.get("appauthor", __appauthor__)
     appname = kwargs.get("appname", __appname__)
     appfiles = default_app_dirs(appname, appauthor, purpose)
@@ -81,6 +81,7 @@ def prioritize(paths: Dict[int, Path], purpose: str) -> Optional[Path]:
                 return paths[key]
         if purpose == "data":
             return paths[key]
+    return None
 
 
 @dataclass
@@ -88,8 +89,8 @@ class IryConfig:
     """Main configuration class."""
     config_file: str = DEFAULT_CONFIG_FILE
     data_file: str = DEFAULT_DATA_FILE
-    fields: Tuple[str] = DATA_FIELDS
-    defaults: Tuple[Tuple[str, str]] = DEFAULT_FIELD_VALUES
+    fields: Tuple = DATA_FIELDS
+    defaults: Tuple = DEFAULT_FIELD_VALUES
 
     def __post_init__(self):
         """Change default values to mutable objects."""

@@ -1,10 +1,10 @@
 from collections import defaultdict
-from typing import List, Tuple
+from typing import List, Generator
 
 from iry import containers
 
 
-def gen_fields(rec: containers.Register, fields: List[str]) -> Tuple:
+def gen_fields(rec: containers.Register, fields: List[str]) -> Generator:
     for field in fields:
         yield field, str(getattr(rec, field))
 

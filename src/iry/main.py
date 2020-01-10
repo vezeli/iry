@@ -20,10 +20,10 @@ from iry import config, containers, io_utils, utils
 def cli(ctx, pklfile: str, cfgfile: str):
     ctx.ensure_object(dict)
 
-    pklfile = pathlib.Path(pklfile)
-    target_file = config.select("data", priority_path=pklfile)
-    ctx.obj["TARGET"] = target_file
-    config_file = config.select("config", priority_path=cfgfile)
+    pklfile_path = pathlib.Path(pklfile)
+    target_path = config.select("data", priority_file=pklfile)
+    ctx.obj["TARGET"] = target_path
+    config_file = config.select("config", priority_file=cfgfile)
     ctx.obj["CONFIG"] = config.load_config(config_file)
 
 
@@ -44,7 +44,8 @@ def add(ctx, quantity: int, defaults: bool, now):
     records = [io_utils.ask_user(i+1, iryconfig) for i in range(quantity)]
 
     db = io_utils.read(target)
-    db.extend(records)
+    for rec in records:
+        db.insert_record(rec, strategy="bisect")
     io_utils.write(db, target)
 
 
